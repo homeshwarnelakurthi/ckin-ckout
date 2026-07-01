@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "backend",
+      "runtimeExecutable": "H:\\Schedulehours\\backend\\.venv\\Scripts\\python.exe",
+      "runtimeArgs": ["H:\\Schedulehours\\backend\\devserver.py"],
+      "port": 8000
+    },
+    {
+      "name": "frontend",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--prefix", "H:\\Schedulehours\\frontend"],
+      "port": 5173
+    }
+  ]
+}

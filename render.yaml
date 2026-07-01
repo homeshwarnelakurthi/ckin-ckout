@@ -1,0 +1,58 @@
+# Render Blueprint: provisions a free Postgres DB, the FastAPI backend, and
+# the React frontend in one go. In the Render dashboard: New + -> Blueprint,
+# point it at this repo, and click Apply.
+databases:
+  - name: ckin-ckout-db
+    plan: free
+    databaseName: ckin
+    user: ckin
+
+services:
+  - type: web
+    name: ckin-ckout-backend
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ckin-ckout-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: BUSINESS_NAME
+        value: "CK_IN&CK_OUT"
+      - key: MANAGER_NAME
+        value: "Hpatel"
+      - key: DISPLAY_TIMEZONE
+        value: "America/New_York"
+      - key: DEFAULT_HOURLY_RATE
+        value: "10.00"
+      # Set these two in the Render dashboard after first deploy (they create
+      # your one real login on next boot, then you can blank the password
+      # var out again). Do NOT commit real values here.
+      - key: BOOTSTRAP_EMAIL
+        sync: false
+      - key: BOOTSTRAP_PASSWORD
+        sync: false
+      # Filled in after the frontend's URL is known (see README).
+      - key: FRONTEND_ORIGIN
+        sync: false
+
+  - type: web
+    name: ckin-ckout-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      # Filled in after the backend's URL is known (see README).
+      - key: VITE_API_BASE
+        sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
