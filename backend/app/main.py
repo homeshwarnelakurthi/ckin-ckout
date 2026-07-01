@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from sqlalchemy import select
+from sqlalchemy import inspect, select, text
 
 from .config import get_settings
 from .database import Base, SessionLocal, engine
@@ -15,6 +15,20 @@ from .schemas import MetaResponse, UserOut
 from .security import hash_secret
 
 settings = get_settings()
+
+
+def _migrate_email_to_username() -> None:
+    """One-time fixup for databases created before the email->username rename
+    (2026-07). create_all() only adds missing tables, never alters existing
+    columns, so an old deploy's `users.email` column has to be renamed by
+    hand here. No-op once the column is already called `username`."""
+    inspector = inspect(engine)
+    if not inspector.has_table("users"):
+        return
+    columns = {c["name"] for c in inspector.get_columns("users")}
+    if "username" not in columns and "email" in columns:
+        with engine.begin() as conn:
+            conn.execute(text("ALTER TABLE users RENAME COLUMN email TO username"))
 
 
 def _bootstrap_account() -> None:
@@ -50,6 +64,7 @@ def _bootstrap_account() -> None:
 async def lifespan(app: FastAPI):
     # Dev convenience: create tables if they don't exist. Production should use
     # a migration tool (Alembic) instead — see README.
+    _migrate_email_to_username()
     Base.metadata.create_all(bind=engine)
     _bootstrap_account()
     yield

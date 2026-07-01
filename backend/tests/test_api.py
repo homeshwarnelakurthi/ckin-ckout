@@ -96,6 +96,50 @@ def test_correct_own_entry_writes_audit_log(client, user, db):
     assert any(log.field == "notes" for log in logs)
 
 
+def test_migrate_email_to_username_renames_column(db):
+    """Simulates a database created before the email->username rename: an old
+    `users` table with an `email` column instead of `username`. The migration
+    must rename it in place without touching any other data."""
+    from sqlalchemy import inspect, text
+
+    from app.database import Base, engine
+    from app.main import _migrate_email_to_username
+    from app.models import User
+
+    # Recreate the `users` table with the pre-migration column name.
+    Base.metadata.drop_all(bind=engine, tables=[User.__table__])
+    with engine.begin() as conn:
+        conn.execute(
+            text(
+                "CREATE TABLE users ("
+                "id CHAR(36) PRIMARY KEY, full_name TEXT NOT NULL, "
+                "email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, "
+                "hourly_rate NUMERIC(6,2) NOT NULL DEFAULT 10.00, "
+                "is_active BOOLEAN NOT NULL DEFAULT 1, created_at DATETIME)"
+            )
+        )
+        conn.execute(
+            text(
+                "INSERT INTO users (id, full_name, email, password_hash) "
+                "VALUES ('11111111-1111-1111-1111-111111111111', 'Hpatel', "
+                "'123', 'somehash')"
+            )
+        )
+
+    _migrate_email_to_username()
+
+    inspector = inspect(engine)
+    columns = {c["name"] for c in inspector.get_columns("users")}
+    assert "username" in columns
+    assert "email" not in columns
+
+    row = db.execute(text("SELECT username FROM users")).first()
+    assert row[0] == "123"
+
+    # Running again must be a no-op (column already renamed).
+    _migrate_email_to_username()
+
+
 def test_bootstrap_creates_account_once(client, db):
     from app.main import _bootstrap_account
     from app.main import settings as main_settings
