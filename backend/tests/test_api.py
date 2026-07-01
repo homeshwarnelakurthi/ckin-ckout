@@ -100,6 +100,7 @@ def test_bootstrap_creates_account_once(client, db):
     from app.main import _bootstrap_account
     from app.main import settings as main_settings
     from app.models import User
+    from app.security import verify_secret
 
     main_settings.bootstrap_email = "hpatel@ckinckout.example"
     main_settings.bootstrap_password = "realpassword1"
@@ -113,9 +114,37 @@ def test_bootstrap_creates_account_once(client, db):
         main_settings.bootstrap_password = "differentpassword"
         _bootstrap_account()
         assert db.query(User).count() == 1
+        db.refresh(users[0])
+        assert verify_secret("realpassword1", users[0].password_hash)
+        assert not verify_secret("differentpassword", users[0].password_hash)
     finally:
         main_settings.bootstrap_email = None
         main_settings.bootstrap_password = None
+        main_settings.force_password_reset = False
+
+
+def test_bootstrap_force_password_reset(client, user, db):
+    """A forgotten password can be recovered via FORCE_PASSWORD_RESET, without
+    DB shell access, and it must not create a duplicate account."""
+    from app.main import _bootstrap_account
+    from app.main import settings as main_settings
+    from app.security import verify_secret
+
+    main_settings.bootstrap_email = user.email
+    main_settings.bootstrap_password = "brand-new-password"
+    main_settings.force_password_reset = True
+    try:
+        _bootstrap_account()
+        assert db.query(type(user)).count() == 1
+        db.refresh(user)
+        assert verify_secret("brand-new-password", user.password_hash)
+
+        hdr = auth_header(client, user.email, "brand-new-password")
+        assert hdr["Authorization"].startswith("Bearer ")
+    finally:
+        main_settings.bootstrap_email = None
+        main_settings.bootstrap_password = None
+        main_settings.force_password_reset = False
 
 
 def test_cannot_correct_someone_elses_entry(client, user, db):

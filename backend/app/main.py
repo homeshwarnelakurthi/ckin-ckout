@@ -18,23 +18,30 @@ settings = get_settings()
 
 
 def _bootstrap_account() -> None:
-    """Create the one real account from env vars if no user exists yet.
-    Safe to run on every startup — a no-op once the account exists."""
+    """Create the one real account from env vars if no user exists yet, or —
+    if FORCE_PASSWORD_RESET is set — overwrite an existing account's password.
+    Safe to run on every startup; a no-op once the account exists and reset
+    isn't requested."""
     if not settings.bootstrap_email or not settings.bootstrap_password:
         return
     db = SessionLocal()
     try:
-        if db.scalar(select(User)) is not None:
-            return
-        db.add(
-            User(
-                full_name=settings.manager_name,
-                email=settings.bootstrap_email.lower(),
-                password_hash=hash_secret(settings.bootstrap_password),
-                hourly_rate=settings.default_hourly_rate,
-            )
+        existing = db.scalar(
+            select(User).where(User.email == settings.bootstrap_email.lower())
         )
-        db.commit()
+        if existing is None:
+            db.add(
+                User(
+                    full_name=settings.manager_name,
+                    email=settings.bootstrap_email.lower(),
+                    password_hash=hash_secret(settings.bootstrap_password),
+                    hourly_rate=settings.default_hourly_rate,
+                )
+            )
+            db.commit()
+        elif settings.force_password_reset:
+            existing.password_hash = hash_secret(settings.bootstrap_password)
+            db.commit()
     finally:
         db.close()
 

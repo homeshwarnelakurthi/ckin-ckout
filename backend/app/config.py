@@ -53,6 +53,12 @@ class Settings(BaseSettings):
     bootstrap_email: str | None = None
     bootstrap_password: str | None = None
 
+    # Forgot your password and have no DB shell access? Set BOOTSTRAP_PASSWORD
+    # to a new value and this to true, then restart — the existing account's
+    # password is overwritten on next boot. Turn it back off afterward so a
+    # future restart can't silently reset it again.
+    force_password_reset: bool = False
+
 
 @lru_cache
 def get_settings() -> Settings:
