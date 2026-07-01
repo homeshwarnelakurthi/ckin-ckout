@@ -1,7 +1,7 @@
 # CK_IN&CK_OUT — Personal Time Tracking
 
-A mobile-first time-tracking web app for **Hpatel** (a hotel manager) to track
-his own clock-in/clock-out and pay at a configurable **$10/hour**. Single
+A mobile-first time-tracking web app for **patel** (a hotel manager) to track
+his own clock-in/clock-out and pay at a configurable **$0/hour**. Single
 account, no employee management — just a big Clock In / Clock Out button,
 a running history, and self-service corrections.
 
