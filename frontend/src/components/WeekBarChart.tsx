@@ -43,18 +43,18 @@ export default function WeekBarChart({
   const max = Math.max(1, ...days.map((d) => d.hours));
 
   return (
-    <div className="flex h-40 items-end gap-2">
+    <div className="flex h-40 items-end gap-2 border-b border-ink-200 pb-0">
       {days.map((d) => (
         <div key={d.label} className="flex flex-1 flex-col items-center gap-1">
           <div className="flex w-full flex-1 items-end">
             <div
-              className="w-full rounded-t-md bg-accent transition-all"
+              className="w-full rounded-t-sm bg-accent transition-all"
               style={{ height: `${(d.hours / max) * 100}%` }}
               title={`${d.hours.toFixed(1)}h`}
             />
           </div>
-          <span className="text-xs text-slate-500">{d.label}</span>
-          <span className="text-[11px] font-medium text-slate-400">
+          <span className="eyebrow pt-1 text-[11px]">{d.label}</span>
+          <span className="text-[11px] font-medium text-ink-400">
             {d.hours > 0 ? `${d.hours.toFixed(1)}h` : ""}
           </span>
         </div>

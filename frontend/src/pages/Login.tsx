@@ -27,15 +27,18 @@ export default function Login() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-brand px-4">
       <div className="w-full max-w-sm">
-        <div className="mb-6 text-center text-white">
-          <h1 className="text-3xl font-bold tracking-tight">
+        <div className="mb-8 text-center text-white">
+          <div className="mx-auto mb-4 h-px w-12 bg-accent" />
+          <h1 className="font-display text-3xl tracking-wide">
             {meta?.business_name ?? "CK_IN&CK_OUT"}
           </h1>
-          <p className="mt-1 text-sm text-white/70">Your time tracking</p>
+          <p className="mt-2 text-xs font-semibold uppercase tracking-[0.2em] text-white/50">
+            Time &amp; Attendance
+          </p>
         </div>
 
         <div className="card">
-          <form onSubmit={submit} className="space-y-4">
+          <form onSubmit={submit} className="space-y-5">
             <div>
               <label className="label" htmlFor="username">
                 Username
@@ -69,13 +72,13 @@ export default function Login() {
             </div>
 
             {error && (
-              <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
+              <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
                 {error}
               </p>
             )}
 
             <button type="submit" className="btn-primary w-full" disabled={busy}>
-              {busy ? "Signing in…" : "Sign in"}
+              {busy ? "Signing in…" : "Sign In"}
             </button>
           </form>
         </div>
