@@ -12,7 +12,7 @@ a running history, and self-service corrections.
 
 ## Features
 
-- Single login (email + password, bcrypt-hashed) with **failed-login rate limiting**.
+- Single login (simple username + password, bcrypt-hashed) with **failed-login rate limiting**.
 - One large, state-aware **Clock In (green) / Clock Out (red)** button with a
   live shift timer.
 - **You can never have two open shifts at once** — enforced at the API *and*
@@ -52,9 +52,9 @@ npm run dev        # http://localhost:5173, proxies /api to :8000
 
 ### Demo login (from the seed script)
 
-| Email                       | Password    |
-| ---------------------------- | ----------- |
-| `hpatel@ckinckout.example`   | `admin1234` |
+| Username | Password |
+| -------- | -------- |
+| `123`    | `1234`   |
 
 The seed also creates illustrative shifts: two shifts in one day, a shift
 that crosses midnight, and a forgotten clock-out that's auto-flagged. Seed
@@ -124,17 +124,23 @@ and `https://ckin-ckout-frontend.onrender.com`):
 
 1. On **ckin-ckout-backend** → Environment, set:
    - `FRONTEND_ORIGIN` = your frontend's URL
-   - `BOOTSTRAP_EMAIL` = the email you want to log in with
-   - `BOOTSTRAP_PASSWORD` = a real password (this creates your one account on
-     next boot — after it's created, you can clear this variable's value)
+   - `BOOTSTRAP_USERNAME` = whatever you want to log in with — plain numbers
+     are fine, e.g. `123`
+   - `BOOTSTRAP_PASSWORD` = a real password, e.g. `1234` (this creates your
+     one account on next boot — after it's created, you can clear this
+     variable's value if you want)
 2. On **ckin-ckout-frontend** → Environment, set:
    - `VITE_API_BASE` = your backend's URL
 3. Manually redeploy both (Render does this automatically on env var changes
    for the backend; the frontend needs a manual redeploy since `VITE_API_BASE`
    is baked in at build time).
 
-Open the frontend URL on your phone and log in with the email/password from
+Open the frontend URL on your phone and log in with the username/password from
 step 4.1 — your account now has zero shifts, ready for real use.
+
+**Forgot your password later?** Set `BOOTSTRAP_PASSWORD` to a new value, add
+`FORCE_PASSWORD_RESET` = `true`, save (triggers a restart), log in, then set
+`FORCE_PASSWORD_RESET` back to `false` so a future restart can't reset it again.
 
 ### Things to know about the free tier
 
@@ -156,7 +162,8 @@ See [`.env.example`](.env.example). Key ones:
 | ---------------------------------- | ---------------------------------------------------- | -------------------------- |
 | `DATABASE_URL`                    | SQLAlchemy connection string                        | local SQLite file          |
 | `JWT_SECRET`                      | JWT signing key (**set a strong value in prod!**)   | `change-me-in-production`  |
-| `BOOTSTRAP_EMAIL` / `_PASSWORD`   | Creates your one real account on first boot          | unset (no bootstrap)       |
+| `BOOTSTRAP_USERNAME` / `_PASSWORD` | Creates your one real account on first boot         | unset (no bootstrap)       |
+| `FORCE_PASSWORD_RESET`            | Overwrites the existing password on next boot        | `false`                    |
 | `DEFAULT_HOURLY_RATE`             | Pay rate used for calculations                        | `10.00`                    |
 | `OPEN_SHIFT_FLAG_THRESHOLD_HOURS` | Auto-flag shifts open longer than this                | `14`                       |
 | `DISPLAY_TIMEZONE`                | Timezone for rendering (storage is always UTC)        | `America/New_York`         |

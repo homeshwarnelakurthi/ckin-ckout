@@ -37,8 +37,9 @@ services:
         value: "10.00"
       # Set these two in the Render dashboard after first deploy (they create
       # your one real login on next boot, then you can blank the password
-      # var out again). Do NOT commit real values here.
-      - key: BOOTSTRAP_EMAIL
+      # var out again). Plain numbers are fine, e.g. username "123", password
+      # "1234". Do NOT commit real values here.
+      - key: BOOTSTRAP_USERNAME
         sync: false
       - key: BOOTSTRAP_PASSWORD
         sync: false

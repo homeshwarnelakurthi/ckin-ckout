@@ -50,7 +50,8 @@ class Settings(BaseSettings):
     # If set and no user exists yet, the app creates exactly one real account
     # from these on startup — no fake seed data. Set these as secrets on the
     # host (e.g. Render env vars), then unset/rotate the password afterward.
-    bootstrap_email: str | None = None
+    # Plain numbers are fine, e.g. username "123", password "1234".
+    bootstrap_username: str | None = None
     bootstrap_password: str | None = None
 
     # Forgot your password and have no DB shell access? Set BOOTSTRAP_PASSWORD

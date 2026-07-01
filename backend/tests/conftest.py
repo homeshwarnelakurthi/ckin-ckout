@@ -50,8 +50,8 @@ def client(db):
 def user(db):
     u = User(
         full_name="Hpatel",
-        email="hpatel@ckinckout.example",
-        password_hash=hash_secret("admin1234"),
+        username="123",
+        password_hash=hash_secret("1234"),
         hourly_rate=10.00,
     )
     db.add(u)
@@ -60,7 +60,7 @@ def user(db):
     return u
 
 
-def auth_header(client, email, password):
-    resp = client.post("/api/auth/login", json={"email": email, "password": password})
+def auth_header(client, username, password):
+    resp = client.post("/api/auth/login", json={"username": username, "password": password})
     assert resp.status_code == 200, resp.text
     return {"Authorization": f"Bearer {resp.json()['access_token']}"}

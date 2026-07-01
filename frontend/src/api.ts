@@ -5,7 +5,7 @@ const API_BASE = import.meta.env.VITE_API_BASE ?? ""; // "" => same-origin (dev 
 export type User = {
   id: string;
   full_name: string;
-  email: string;
+  username: string;
   hourly_rate: string;
   is_active: boolean;
 };
@@ -78,10 +78,10 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 
 export const api = {
   meta: () => request<Meta>("/api/meta"),
-  login: (email: string, password: string) =>
+  login: (username: string, password: string) =>
     request<{ access_token: string; user: User }>("/api/auth/login", {
       method: "POST",
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ username, password }),
     }),
   me: () => request<User>("/api/me"),
   clockIn: () => request<{ entry: TimeEntry; message: string }>("/api/clock-in", { method: "POST" }),

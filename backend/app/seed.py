@@ -38,8 +38,8 @@ def run():
 
         user = User(
             full_name=settings.manager_name,
-            email="hpatel@ckinckout.example",
-            password_hash=hash_secret("admin1234"),
+            username="123",
+            password_hash=hash_secret("1234"),
             hourly_rate=settings.default_hourly_rate,
         )
         db.add(user)
@@ -75,7 +75,7 @@ def run():
         db.commit()
 
         print("Seed complete.")
-        print(f"  Login: hpatel@ckinckout.example / admin1234")
+        print("  Login: 123 / 1234")
         print(f"  Entries: {db.query(TimeEntry).count()}")
     finally:
         db.close()

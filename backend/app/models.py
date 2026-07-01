@@ -39,7 +39,7 @@ class User(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(GUID, primary_key=True, default=_uuid)
     full_name: Mapped[str] = mapped_column(Text, nullable=False)
-    email: Mapped[str] = mapped_column(Text, unique=True, nullable=False, index=True)
+    username: Mapped[str] = mapped_column(Text, unique=True, nullable=False, index=True)
     password_hash: Mapped[str] = mapped_column(Text, nullable=False)
     hourly_rate: Mapped[float] = mapped_column(
         Numeric(6, 2), nullable=False, server_default=text("10.00")

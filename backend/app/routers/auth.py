@@ -20,16 +20,16 @@ def _client_key(request: Request, identifier: str) -> str:
 
 @router.post("/login", response_model=TokenResponse)
 def login(body: LoginRequest, request: Request, db: Session = Depends(get_db)):
-    key = _client_key(request, body.email)
+    key = _client_key(request, body.username)
     if not rate_limit_ok(key):
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail="Too many failed attempts. Try again later.",
         )
 
-    user = db.scalar(select(User).where(User.email == body.email.lower()))
+    user = db.scalar(select(User).where(User.username == body.username.lower()))
     if user is None or not verify_secret(body.password, user.password_hash):
-        # Same message either way — don't leak which emails exist.
+        # Same message either way — don't leak which usernames exist.
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
         )

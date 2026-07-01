@@ -12,7 +12,7 @@ def test_health_and_meta(client):
 def test_login_bad_password(client, user):
     resp = client.post(
         "/api/auth/login",
-        json={"email": "hpatel@ckinckout.example", "password": "wrong"},
+        json={"username": "123", "password": "wrong"},
     )
     assert resp.status_code == 401
 
@@ -23,13 +23,13 @@ def test_login_rate_limit(client, user):
     for _ in range(6):
         last = client.post(
             "/api/auth/login",
-            json={"email": "hpatel@ckinckout.example", "password": "wrong"},
+            json={"username": "123", "password": "wrong"},
         )
     assert last.status_code == 429
 
 
 def test_clock_in_out_flow(client, user):
-    hdr = auth_header(client, "hpatel@ckinckout.example", "admin1234")
+    hdr = auth_header(client, "123", "1234")
 
     r1 = client.post("/api/clock-in", headers=hdr)
     assert r1.status_code == 201
@@ -54,7 +54,7 @@ def test_clock_out_requires_auth(client):
 
 
 def test_summary_and_history(client, user):
-    hdr = auth_header(client, "hpatel@ckinckout.example", "admin1234")
+    hdr = auth_header(client, "123", "1234")
     client.post("/api/clock-in", headers=hdr)
     client.post("/api/clock-out", headers=hdr)
 
@@ -67,7 +67,7 @@ def test_summary_and_history(client, user):
 
 
 def test_export_csv(client, user):
-    hdr = auth_header(client, "hpatel@ckinckout.example", "admin1234")
+    hdr = auth_header(client, "123", "1234")
     client.post("/api/clock-in", headers=hdr)
     client.post("/api/clock-out", headers=hdr)
 
@@ -79,7 +79,7 @@ def test_export_csv(client, user):
 def test_correct_own_entry_writes_audit_log(client, user, db):
     from app.models import EntryAuditLog
 
-    hdr = auth_header(client, "hpatel@ckinckout.example", "admin1234")
+    hdr = auth_header(client, "123", "1234")
     client.post("/api/clock-in", headers=hdr)
     entry_id = client.post("/api/clock-out", headers=hdr).json()["entry"]["id"]
 
@@ -102,13 +102,13 @@ def test_bootstrap_creates_account_once(client, db):
     from app.models import User
     from app.security import verify_secret
 
-    main_settings.bootstrap_email = "hpatel@ckinckout.example"
+    main_settings.bootstrap_username = "123"
     main_settings.bootstrap_password = "realpassword1"
     try:
         _bootstrap_account()
         users = db.query(User).all()
         assert len(users) == 1
-        assert users[0].email == "hpatel@ckinckout.example"
+        assert users[0].username == "123"
 
         # Running again must not create a second account or reset the password.
         main_settings.bootstrap_password = "differentpassword"
@@ -118,7 +118,7 @@ def test_bootstrap_creates_account_once(client, db):
         assert verify_secret("realpassword1", users[0].password_hash)
         assert not verify_secret("differentpassword", users[0].password_hash)
     finally:
-        main_settings.bootstrap_email = None
+        main_settings.bootstrap_username = None
         main_settings.bootstrap_password = None
         main_settings.force_password_reset = False
 
@@ -130,7 +130,7 @@ def test_bootstrap_force_password_reset(client, user, db):
     from app.main import settings as main_settings
     from app.security import verify_secret
 
-    main_settings.bootstrap_email = user.email
+    main_settings.bootstrap_username = user.username
     main_settings.bootstrap_password = "brand-new-password"
     main_settings.force_password_reset = True
     try:
@@ -139,10 +139,10 @@ def test_bootstrap_force_password_reset(client, user, db):
         db.refresh(user)
         assert verify_secret("brand-new-password", user.password_hash)
 
-        hdr = auth_header(client, user.email, "brand-new-password")
+        hdr = auth_header(client, user.username, "brand-new-password")
         assert hdr["Authorization"].startswith("Bearer ")
     finally:
-        main_settings.bootstrap_email = None
+        main_settings.bootstrap_username = None
         main_settings.bootstrap_password = None
         main_settings.force_password_reset = False
 
@@ -153,7 +153,7 @@ def test_cannot_correct_someone_elses_entry(client, user, db):
 
     other = User(
         full_name="Other",
-        email="other@ckinckout.example",
+        username="456",
         password_hash=hash_secret("password123"),
         hourly_rate=10.00,
     )
@@ -161,10 +161,10 @@ def test_cannot_correct_someone_elses_entry(client, user, db):
     db.commit()
     db.refresh(other)
 
-    hdr = auth_header(client, "hpatel@ckinckout.example", "admin1234")
+    hdr = auth_header(client, "123", "1234")
     entry_id = client.post("/api/clock-in", headers=hdr).json()["entry"]["id"]
 
-    other_hdr = auth_header(client, "other@ckinckout.example", "password123")
+    other_hdr = auth_header(client, "456", "password123")
     resp = client.patch(
         f"/api/timesheet/me/entries/{entry_id}",
         headers=other_hdr,

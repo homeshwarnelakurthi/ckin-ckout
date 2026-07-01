@@ -13,7 +13,7 @@ type AuthState = {
   user: User | null;
   meta: Meta | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<User>;
+  login: (username: string, password: string) => Promise<User>;
   logout: () => void;
 };
 
@@ -69,8 +69,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, [user, resetIdle]);
 
-  const login = useCallback(async (email: string, password: string) => {
-    const res = await api.login(email, password);
+  const login = useCallback(async (username: string, password: string) => {
+    const res = await api.login(username, password);
     tokenStore.set(res.access_token);
     setUser(res.user);
     return res.user;

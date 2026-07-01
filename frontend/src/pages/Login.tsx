@@ -4,7 +4,7 @@ import { useAuth } from "../auth";
 
 export default function Login() {
   const { meta, login } = useAuth();
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -14,7 +14,7 @@ export default function Login() {
     setError(null);
     setBusy(true);
     try {
-      await login(email.trim(), password);
+      await login(username.trim(), password);
     } catch (err) {
       setError(
         err instanceof ApiError ? err.message : "Something went wrong. Try again."
@@ -37,16 +37,17 @@ export default function Login() {
         <div className="card">
           <form onSubmit={submit} className="space-y-4">
             <div>
-              <label className="label" htmlFor="email">
-                Email
+              <label className="label" htmlFor="username">
+                Username
               </label>
               <input
-                id="email"
-                type="email"
+                id="username"
+                type="text"
+                inputMode="numeric"
                 autoComplete="username"
                 className="input"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 required
               />
             </div>
@@ -58,6 +59,7 @@ export default function Login() {
               <input
                 id="password"
                 type="password"
+                inputMode="numeric"
                 autoComplete="current-password"
                 className="input"
                 value={password}

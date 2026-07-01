@@ -3,12 +3,12 @@ import uuid
 from datetime import datetime
 from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 # --- Auth ---
 class LoginRequest(BaseModel):
-    email: EmailStr
+    username: str = Field(min_length=1)
     password: str
 
 
@@ -24,7 +24,7 @@ class UserOut(BaseModel):
 
     id: uuid.UUID
     full_name: str
-    email: EmailStr
+    username: str
     hourly_rate: Decimal
     is_active: bool
 

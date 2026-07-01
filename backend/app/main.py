@@ -22,18 +22,18 @@ def _bootstrap_account() -> None:
     if FORCE_PASSWORD_RESET is set — overwrite an existing account's password.
     Safe to run on every startup; a no-op once the account exists and reset
     isn't requested."""
-    if not settings.bootstrap_email or not settings.bootstrap_password:
+    if not settings.bootstrap_username or not settings.bootstrap_password:
         return
     db = SessionLocal()
     try:
         existing = db.scalar(
-            select(User).where(User.email == settings.bootstrap_email.lower())
+            select(User).where(User.username == settings.bootstrap_username.lower())
         )
         if existing is None:
             db.add(
                 User(
                     full_name=settings.manager_name,
-                    email=settings.bootstrap_email.lower(),
+                    username=settings.bootstrap_username.lower(),
                     password_hash=hash_secret(settings.bootstrap_password),
                     hourly_rate=settings.default_hourly_rate,
                 )
